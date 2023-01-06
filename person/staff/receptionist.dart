@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import '../../appointment/appointment.dart';
 import '../../bill/bill.dart';
 import '../../department/department.dart';
+import '../../helpers/terminal_helper.dart';
 import '../patient/patient.dart';
 import 'doctor.dart';
 import 'staff.dart';
@@ -21,61 +21,67 @@ class Receptionist extends Staff {
   });
 
   Department? bookAppointment(Department department) {
-    print("\x1B[2J\x1B[0;0H");
-    print("Book Appointment for new patient.");
-    print("-" * 20);
-    print("- select doctor:");
-    print("-" * 20);
-    department.doctors.forEach((el) {
-      print(
-          "${el.id} - doctor name : ${el.name}, specialization : ${el.specialization}");
-    });
-
-    int doctorId = int.parse(stdin.readLineSync() ?? "");
-    print("\x1B[2J\x1B[0;0H");
-
-    int doctorindex = department.doctors.indexWhere((el) => el.id == doctorId);
-    if (doctorindex != -1) {
-      Doctor doctor = department.doctors.firstWhere((el) => el.id == doctorId);
-
-      print("Patient information.");
+    if (department.doctors.length > 0) {
+      print("\x1B[2J\x1B[0;0H");
+      print("Book Appointment for new patient.");
       print("-" * 20);
-      print("Enter patient name : ");
-      String name = stdin.readLineSync() ?? "Default Patient name";
-      print("Enter patient age :  : ");
-      int age = int.parse(stdin.readLineSync() ?? "60");
-      print("Enter patient gender : ");
-      String gender = stdin.readLineSync() ?? "Male";
-      print("Enter patient address : ");
-      String address = stdin.readLineSync() ?? "Default address";
-      print("Enter patient phone : ");
-      String phone = stdin.readLineSync() ?? "Default phone";
+      print("- select doctor:");
+      print("-" * 20);
+      department.doctors.forEach((el) {
+        print(
+            "${el.id} - doctor name : ${el.name}, specialization : ${el.specialization}");
+      });
 
-      department.addAppointment(Appointment(
-        id: department.appointments.length + 1,
-        date: DateTime(
-          DateTime.now().year,
-          DateTime.now().month,
-          DateTime.now().day + 1,
-        ),
-        patient: Patient(
+      int doctorId = int.parse(stdin.readLineSync() ?? "");
+      print("\x1B[2J\x1B[0;0H");
+
+      int doctorindex =
+          department.doctors.indexWhere((el) => el.id == doctorId);
+      if (doctorindex != -1) {
+        Doctor doctor =
+            department.doctors.firstWhere((el) => el.id == doctorId);
+
+        print("Patient information.");
+        print("-" * 20);
+        print("Enter patient name : ");
+        String name = stdin.readLineSync() ?? "Default Patient name";
+        print("Enter patient age :  ");
+        int age = int.parse(stdin.readLineSync() ?? "60");
+        print("Enter patient gender : ");
+        String gender = stdin.readLineSync() ?? "Male";
+        print("Enter patient address : ");
+        String address = stdin.readLineSync() ?? "Default address";
+        print("Enter patient phone : ");
+        String phone = stdin.readLineSync() ?? "Default phone";
+
+        department.addAppointment(Appointment(
           id: department.appointments.length + 1,
-          name: name,
-          gender: gender,
-          age: age,
-          phone: phone,
-          address: address,
-          bill: generateBill(),
-          medicins: [],
-        ),
-        doctor: doctor,
-      ));
-      return department;
+          date: DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day + 1,
+          ),
+          patient: Patient(
+            id: department.appointments.length + 1,
+            name: name,
+            gender: gender,
+            age: age,
+            phone: phone,
+            address: address,
+            bill: generateBill(),
+            medicins: [],
+          ),
+          doctor: doctor,
+        ));
+        return department;
+      } else {
+        print("Invalid option, Enter any key to leave.");
+        stdin.readLineSync();
+      }
     } else {
-      print("Invalid option, Enter any key to leave.");
-      stdin.readLineSync();
-      return null;
+      TerminalHelper.noDoctors();
     }
+    return null;
   }
 
   Bill generateBill() {
@@ -83,25 +89,28 @@ class Receptionist extends Staff {
   }
 
   Department? disChargePatient(Department department) {
-    print("select aptinet:");
-    print("-" * 20);
-    department.appointments.forEach((el) {
-      print(el.id.toString() + " - patinet name : " + el.patient.name);
-    });
+    if (department.appointments.length > 0) {
+      print("select aptinet:");
+      print("-" * 20);
+      department.appointments.forEach((el) {
+        print(el.id.toString() + " - patinet name : " + el.patient.name);
+      });
 
-    int appointmentId = int.parse(stdin.readLineSync() ?? "");
-    print("\x1B[2J\x1B[0;0H");
+      int appointmentId = int.parse(stdin.readLineSync() ?? "");
+      print("\x1B[2J\x1B[0;0H");
 
-    int appointmentindex =
-        department.appointments.indexWhere((el) => el.id == appointmentId);
-    if (appointmentindex != -1) {
-      department.appointments.removeWhere((el) => el.id == appointmentId);
-      return department;
+      int appointmentindex =
+          department.appointments.indexWhere((el) => el.id == appointmentId);
+      if (appointmentindex != -1) {
+        department.appointments.removeWhere((el) => el.id == appointmentId);
+        return department;
+      } else {
+        TerminalHelper.invalidOption();
+      }
     } else {
-      print("Invalid option, Enter any key to leave.");
-      stdin.readLineSync();
-      return null;
+      TerminalHelper.noPationts();
     }
+    return null;
   }
 
   Map<String, dynamic> toMap() {

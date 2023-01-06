@@ -1,6 +1,7 @@
 import 'dart:io';
 import '../../appointment/appointment.dart';
 import '../../department/department.dart';
+import '../../helpers/terminal_helper.dart';
 import '../../hospital/hospital.dart';
 import 'staff.dart';
 
@@ -48,24 +49,29 @@ class Nurse extends Staff {
     return null;
   }
 
-  Department? administerMedicine(Hospital hospital, Department department) {
-    print("\x1B[2J\x1B[0;0H");
-    print("Nurse ${name} selected");
-    print("-" * 40);
+  Department? giveMedicine(Hospital hospital, Department department) {
+    if (department.appointments.length > 0) {
+      print("\x1B[2J\x1B[0;0H");
+      print("Nurse ${name} selected");
+      print("-" * 40);
 
-    if (hospital.medicines.length > 0) {
-      Appointment? appointment = Appointment.selectAppointment(department);
+      if (hospital.medicines.length > 0) {
+        Appointment? appointment = Appointment.selectAppointment(department);
 
-      if (appointment != null) {
-        department.appointments
-            .firstWhere((el) => el.id == appointment.id)
-            .patient
-            .takeMedicins();
+        if (appointment != null) {
+          department.appointments
+              .firstWhere((el) => el.id == appointment.id)
+              .patient
+              .takeMedicins();
 
-        return department;
+          return department;
+        }
+      } else {
+        TerminalHelper.noMedicens();
       }
+    } else {
+      TerminalHelper.noPationts();
     }
-
     return null;
   }
 

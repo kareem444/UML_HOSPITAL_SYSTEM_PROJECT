@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../../appointment/appointment.dart';
 import '../../department/department.dart';
+import '../../helpers/terminal_helper.dart';
 import '../../hospital/hospital.dart';
 import '../../medicine/medicine.dart';
 import 'staff.dart';
@@ -23,26 +24,30 @@ class Doctor extends Staff {
   });
 
   static Doctor? selectDoctor(Department department) {
-    print("Select doctor, or enter 0 to leave");
-    print("-" * 40);
+    if (department.doctors.length > 0) {
+      print("Select doctor, or enter 0 to leave");
+      print("-" * 40);
 
-    department.doctors.forEach((el) {
-      print(
-          "${el.id} - doctor name : ${el.name}, specialization : ${el.specialization}");
-    });
+      department.doctors.forEach((el) {
+        print(
+            "${el.id} - doctor name : ${el.name}, specialization : ${el.specialization}");
+      });
 
-    int option = int.parse(stdin.readLineSync() ?? "0");
-    print("\x1B[2J\x1B[0;0H");
+      int option = int.parse(stdin.readLineSync() ?? "0");
+      print("\x1B[2J\x1B[0;0H");
 
-    if (option > 0) {
-      int index = department.doctors.indexWhere((el) => el.id == option);
-      if (index != -1) {
-        return department.doctors.firstWhere((el) => el.id == option);
-      } else {
-        print("\x1B[2J\x1B[0;0H");
-        print("invalid number, click any button to leave");
-        stdin.readLineSync();
+      if (option > 0) {
+        int index = department.doctors.indexWhere((el) => el.id == option);
+        if (index != -1) {
+          return department.doctors.firstWhere((el) => el.id == option);
+        } else {
+          print("\x1B[2J\x1B[0;0H");
+          print("invalid number, click any button to leave");
+          stdin.readLineSync();
+        }
       }
+    } else {
+      TerminalHelper.noDoctors();
     }
     return null;
   }

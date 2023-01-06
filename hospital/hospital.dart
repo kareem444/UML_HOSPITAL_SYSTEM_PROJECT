@@ -1,9 +1,9 @@
 import 'dart:io';
 import '../constants.dart';
 import '../department/department.dart';
-import '../helpers/jsonHelper.dart';
+import '../helpers/terminal_helper.dart';
+import '../jsonHelper.dart';
 import '../medicine/medicine.dart';
-import '../terminal_helper.dart';
 
 class Hospital {
   String name;
@@ -64,15 +64,19 @@ class Hospital {
   }
 
   deleteDeparment(int? id) async {
-    if (id != null) {
-      if (id <= departments.length && id > 0) {
-        departments.removeWhere((el) => el.id == id);
-        await saveData(this);
+    if (departments.length > 0) {
+      if (id != null) {
+        if (id <= departments.length && id > 0) {
+          departments.removeWhere((el) => el.id == id);
+          await saveData(this);
+        } else {
+          print("thi department not exist");
+        }
       } else {
-        print("thi department not exist");
+        TerminalHelper.invalidOption();
       }
     } else {
-      print("please enter invalid id");
+      TerminalHelper.noDepartments();
     }
   }
 
@@ -113,25 +117,27 @@ class Hospital {
   }
 
   removemedicine() async {
-    print("select one of thes medicins to Remove, or press 0 to leave");
-    print("-" * 20);
+    if (medicines.length > 0) {
+      print("select one of thes medicins to Remove, or press 0 to leave");
+      print("-" * 20);
 
-    medicines.forEach((el) {
-      print("${el.id} - the name : ${el.name}, the company : ${el.company}.");
-    });
+      medicines.forEach((el) {
+        print("${el.id} - the name : ${el.name}, the company : ${el.company}.");
+      });
 
-    int option = int.parse(stdin.readLineSync() ?? "0");
+      int option = int.parse(stdin.readLineSync() ?? "0");
 
-    if (option > 0) {
-      int index = medicines.indexWhere((el) => el.id == option);
-      if (index != -1) {
-        medicines.removeWhere((el) => el.id == option);
-        await saveData(this);
-      } else {
-        print("\x1B[2J\x1B[0;0H");
-        print("invalid number, press any key to leave.");
-        stdin.readLineSync();
+      if (option > 0) {
+        int index = medicines.indexWhere((el) => el.id == option);
+        if (index != -1) {
+          medicines.removeWhere((el) => el.id == option);
+          await saveData(this);
+        } else {
+          TerminalHelper.invalidOption();
+        }
       }
+    } else {
+      TerminalHelper.noMedicens();
     }
   }
 
@@ -139,12 +145,11 @@ class Hospital {
     departments.removeWhere((Department el) => el.id == department.id);
   }
 
-  static setHospital() async {
+  static enter() async {
     Map<String, dynamic>? data = await JsonHelper.readJsonFile();
     if (data?[Constants.hospital] != null) {
       return;
     }
-
     print('Hospital Management System');
     print('-' * 20);
     print('Enter the hospital name : ');
@@ -169,7 +174,19 @@ class Hospital {
 
   control() async {
     while (true) {
-      int option = await TerminalHelper.hospitalControl(this);
+      print("\x1B[2J\x1B[0;0H");
+      print('Hospital $name System');
+      print('-' * 20);
+      print('1. view hospital information');
+      print('2. Edit hospital name');
+      print('3. Edit hospital address');
+      print('4. Edit hospital phone');
+      print('5. Add medicine');
+      print('6. remove medicine');
+      print('7. Cancel');
+
+      int option = int.parse(stdin.readLineSync() ?? "");
+      print("\x1B[2J\x1B[0;0H");
 
       if (option == 1) {
         viewData();

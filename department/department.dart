@@ -4,7 +4,7 @@ import '../appointment/appointment.dart';
 import '../person/staff/doctor.dart';
 import '../person/staff/nurse.dart';
 import '../person/staff/receptionist.dart';
-import '../terminal_helper.dart';
+import '../helpers/terminal_helper.dart';
 
 class Department {
   int id;
@@ -92,21 +92,25 @@ class Department {
   }
 
   void removeNurse() {
-    print("Select Nurse to delete, or enter 0 to cancle : ");
-    print("-" * 40);
-    nurses.forEach((el) {
-      print("${el.id}- Nurse Name: ${el.name}.");
-    });
-    int option = int.parse(stdin.readLineSync() ?? "");
-    if (option > 0) {
-      int index = nurses.indexWhere((el) => el.id == option);
-      if (index != -1) {
-        nurses.removeWhere((Nurse el) => el.id == option);
-      } else {
-        print("\x1B[2J\x1B[0;0H");
-        print("invalid number, Enter any button to leave.");
-        stdin.readLineSync();
+    if (this.nurses.length > 0) {
+      print("Select Nurse to delete, or enter 0 to cancle : ");
+      print("-" * 40);
+      nurses.forEach((el) {
+        print("${el.id}- Nurse Name: ${el.name}.");
+      });
+      int option = int.parse(stdin.readLineSync() ?? "");
+      if (option > 0) {
+        int index = nurses.indexWhere((el) => el.id == option);
+        if (index != -1) {
+          nurses.removeWhere((Nurse el) => el.id == option);
+        } else {
+          print("\x1B[2J\x1B[0;0H");
+          print("invalid number, Enter any button to leave.");
+          stdin.readLineSync();
+        }
       }
+    } else {
+      TerminalHelper.noNurses();
     }
   }
 

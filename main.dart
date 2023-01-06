@@ -1,26 +1,34 @@
 import 'dart:io';
 import 'constants.dart';
 import 'department/department.dart';
+import 'helpers/doctor_helper.dart';
 import 'hospital/hospital.dart';
-import 'helpers/jsonHelper.dart';
+import 'jsonHelper.dart';
 import 'person/staff/doctor.dart';
 import 'person/staff/nurse.dart';
-import 'terminal_helper.dart';
 
 void main(List<String> args) async {
-  TerminalHelper.clearTerminal();
+  print("\x1B[2J\x1B[0;0H");
 
-  await Hospital.setHospital();
-  TerminalHelper.clearTerminal();
+  await Hospital.enter();
+  print("\x1B[2J\x1B[0;0H");
 
   while (true) {
     Map<String, dynamic>? data = await JsonHelper.readJsonFile();
     Hospital hospital = Hospital.fromMap(data?[Constants.hospital]);
+    print('Hospital ${hospital.name} System');
+    print('-' * 20);
+    print('1. Hospital');
+    print('2. Departments');
+    print('3. Exit');
+    print('Enter a number: ');
 
-    int option = await TerminalHelper.systemControl(hospital);
+    int option = int.parse(stdin.readLineSync() ?? "3");
+
+    print("\x1B[2J\x1B[0;0H");
 
     if (option == 1) {
-      hospital.control();
+      await hospital.control();
     } else if (option == 2) {
       //****************************************************************/
       // start department control
@@ -28,8 +36,17 @@ void main(List<String> args) async {
       while (true) {
         Map<String, dynamic>? data = await JsonHelper.readJsonFile();
         Hospital hospital = Hospital.fromMap(data?[Constants.hospital]);
+        print("\x1B[2J\x1B[0;0H");
+        print('Manage the departments');
+        print('-' * 20);
+        print('1. view all');
+        print('2. select');
+        print('3. add one');
+        print('4. delete one');
+        print('5. Cancle');
 
-        int option = await TerminalHelper.departmentControl();
+        int option = int.parse(stdin.readLineSync() ?? "5");
+        print("\x1B[2J\x1B[0;0H");
 
         if (option == 1) {
           List<Department> departs = hospital.departments;
@@ -42,32 +59,56 @@ void main(List<String> args) async {
             if (department != null) {
               //******************************************************************* Handle Singel department/
               while (true) {
-                int option =
-                    await TerminalHelper.selectedDepartmentControl(department);
+                print("\x1B[2J\x1B[0;0H");
+                print("Department ${department.name} manage");
+                print("-" * 20);
+                print('1. doctors');
+                print('2. nurses');
+                print('3. Receptionist');
+                print('4. Cancel');
+
+                int option = int.parse(stdin.readLineSync() ?? "4");
+                print("\x1B[2J\x1B[0;0H");
 
                 if (option == 1) {
                   while (true) {
-                    int option = await TerminalHelper.doctorControl(department);
+                    print("\x1B[2J\x1B[0;0H");
+                    print("Manage Doctors in deaprtment ${department.name}");
+                    print("-" * 20);
+                    print('1. add');
+                    print('2. delete');
+                    print('3. select doctor');
+                    print('4. cancle');
+                    print("Please Enter Number : ");
+
+                    int option = int.parse(stdin.readLineSync() ?? "4");
+                    print("\x1B[2J\x1B[0;0H");
 
                     if (option == 1) {
                       department.addDoctor();
                       await hospital.addDepartment(department);
                     } else if (option == 2) {
-                      print("Select Doctor to delete, or enter 0 to cancle : ");
-                      print("-" * 40);
-                      department.doctors.forEach((el) {
-                        print(
-                            "${el.id}- Doctor Name: ${el.name}, specialization: ${el.specialization}.");
-                      });
-                      int option = int.parse(stdin.readLineSync() ?? "0");
-                      department.removeDoctor(option);
-                      await hospital.addDepartment(department);
+                      Department? dept =
+                          await DoctorHelper.deleteDoctor(department);
+                      if (dept != null) {
+                        await hospital.addDepartment(dept);
+                      }
                     } else if (option == 3) {
                       Doctor? doctor = Doctor.selectDoctor(department);
                       if (doctor != null) {
                         while (true) {
-                          int option =
-                              await TerminalHelper.selectedDoctor(doctor);
+                          print("\x1B[2J\x1B[0;0H");
+                          print(
+                              "Doctor ${doctor.name} selected, specialization is ${doctor.specialization}");
+                          print("-" * 20);
+                          print('1. examine patient');
+                          print('2. descripe medicine for patient');
+                          print('3. cancle');
+                          print("Please Enter Number : ");
+
+                          int option = int.parse(stdin.readLineSync() ?? "3");
+                          print("\x1B[2J\x1B[0;0H");
+
                           if (option == 1) {
                             Department? dept =
                                 doctor.examinePatient(department);
@@ -88,12 +129,23 @@ void main(List<String> args) async {
                     } else if (option == 4) {
                       break;
                     } else {
-                      TerminalHelper.invalidOption();
+                      print('Invalid option, Enter any key to leave.');
+                      stdin.readLineSync();
                     }
                   }
                 } else if (option == 2) {
                   while (true) {
-                    int option = await TerminalHelper.nurseControl(department);
+                    print("\x1B[2J\x1B[0;0H");
+                    print("Manage nurses in deaprtment ${department.name}");
+                    print("-" * 40);
+                    print('1. add');
+                    print('2. delete');
+                    print('3. select');
+                    print('4. cancle');
+                    print("Please Enter Number : ");
+
+                    int option = int.parse(stdin.readLineSync() ?? "4");
+                    print("\x1B[2J\x1B[0;0H");
 
                     if (option == 1) {
                       department.addNurse();
@@ -105,12 +157,17 @@ void main(List<String> args) async {
                       Nurse? nurse = Nurse.selectNurse(department);
                       if (nurse != null) {
                         while (true) {
-                          int option =
-                              await TerminalHelper.selectedNurse(nurse);
+                          print("\x1B[2J\x1B[0;0H");
+                          print("Nurse ${nurse.name} selected");
+                          print("-" * 20);
+                          print('1. administer medicens');
+                          print('2. cancel');
 
+                          int option = int.parse(stdin.readLineSync() ?? "2");
+                          print("\x1B[2J\x1B[0;0H");
                           if (option == 1) {
                             Department? dept =
-                                nurse.administerMedicine(hospital, department);
+                                nurse.giveMedicine(hospital, department);
                             if (dept != null) {
                               await hospital.addDepartment(department);
                             }
@@ -122,56 +179,85 @@ void main(List<String> args) async {
                     } else if (option == 4) {
                       break;
                     } else {
-                      TerminalHelper.invalidOption();
+                      print("Invalid option, Enter any key to leave.");
+                      stdin.readLineSync();
                     }
                   }
                 } else if (option == 3) {
-                  int option =
-                      await TerminalHelper.receptionistControl(department);
-                  if (option == 1) {
-                    bool isAdded = department.addReceptionist();
-                    if (isAdded) {
-                      await hospital.addDepartment(department);
-                    }
-                  } else if (option == 2) {
-                    bool isRemoved = department.removeReceptionist();
-                    if (isRemoved) {
-                      await hospital.addDepartment(department);
-                    }
-                  } else if (option == 3) {
-                    if (department.receptionist != null) {
-                      while (true) {
-                        int option = await TerminalHelper.selectdReceptionist();
-                        if (option == 1) {
-                          Department? dept = department.receptionist
-                              ?.bookAppointment(department);
-                          if (dept != null) {
-                            await hospital.addDepartment(department);
-                          }
-                        } else if (option == 2) {
-                          Department? dept = department.receptionist
-                              ?.disChargePatient(department);
-                          if (dept != null) {
-                            await hospital.addDepartment(department);
-                          }
-                        } else if (option == 3) {
-                          break;
-                        } else {
-                          TerminalHelper.invalidOption();
-                        }
+                  while (true) {
+                    print("\x1B[2J\x1B[0;0H");
+                    print(
+                        "Manage receptionist in deaprtment ${department.name}");
+                    print("-" * 40);
+                    print('1. add');
+                    print('2. delete');
+                    print('3. select');
+                    print('4. cancle');
+                    print("Please Enter Number : ");
+
+                    int option = int.parse(stdin.readLineSync() ?? "4");
+
+                    if (option == 1) {
+                      bool isAdded = department.addReceptionist();
+                      if (isAdded) {
+                        await hospital.addDepartment(department);
                       }
+                    } else if (option == 2) {
+                      bool isRemoved = department.removeReceptionist();
+                      if (isRemoved) {
+                        await hospital.addDepartment(department);
+                        print("\x1B[2J\x1B[0;0H");
+                        print("Receptionist removed, press any key to leave");
+                        stdin.readLineSync();
+                      }
+                    } else if (option == 3) {
+                      if (department.receptionist != null) {
+                        while (true) {
+                          print("\x1B[2J\x1B[0;0H");
+                          print("receptionist selected");
+                          print("-" * 40);
+                          print('1. book appointment');
+                          print('2. discharg patient');
+                          print('3. cancle');
+                          print("Please Enter Number : ");
+
+                          int option = int.parse(stdin.readLineSync() ?? "3");
+                          print("\x1B[2J\x1B[0;0H");
+                          if (option == 1) {
+                            Department? dept = department.receptionist
+                                ?.bookAppointment(department);
+                            if (dept != null) {
+                              await hospital.addDepartment(department);
+                            }
+                          } else if (option == 2) {
+                            Department? dept = department.receptionist
+                                ?.disChargePatient(department);
+                            if (dept != null) {
+                              await hospital.addDepartment(department);
+                            }
+                          } else if (option == 3) {
+                            break;
+                          } else {
+                            print("Invalid option, Enter any key to leave.");
+                            stdin.readLineSync();
+                          }
+                        }
+                      } else {
+                        print("\x1B[2J\x1B[0;0H");
+                        print("No receptionist yet, Enter any key to leave.");
+                        stdin.readLineSync();
+                      }
+                    } else if (option == 4) {
+                      break;
                     } else {
-                      TerminalHelper.invalidOption();
+                      print("Invalid option, Enter any key to leave.");
+                      stdin.readLineSync();
                     }
-                  } else if (option == 4) {
-                    break;
-                  } else {
-                    TerminalHelper.invalidOption();
                   }
                 } else if (option == 4) {
                   break;
                 } else {
-                  TerminalHelper.invalidOption();
+                  print('Invalid option, Please try agian');
                 }
               }
               //******************************************************************* end Handle Singel department/
@@ -180,35 +266,23 @@ void main(List<String> args) async {
         } else if (option == 3) {
           print('Enter The Departmen name : ');
           String name = stdin.readLineSync() ?? "Default name";
-          int dept = hospital.departments.indexWhere((el) => el.name == name);
-          if (dept == -1) {
-            await hospital.addDepartment(
-              Department(
-                id: hospital.departments.length + 1,
-                name: name,
-                doctors: [],
-                nurses: [],
-                appointments: [],
-              ),
-            );
-          } else {
-            TerminalHelper.departmentNameExist();
-          }
+          await hospital.addDepartment(
+            Department(
+              id: hospital.departments.length + 1,
+              name: name,
+              doctors: [],
+              nurses: [],
+              appointments: [],
+            ),
+          );
         } else if (option == 4) {
           print('Enter The Departmen number to delete : ');
           int? id = int.parse(stdin.readLineSync() ?? "0");
-
-          int dept = hospital.departments.indexWhere((el) => el.id == id);
-
-          if (dept != -1) {
-            await hospital.deleteDeparment(id);
-          } else {
-            TerminalHelper.departmentNotFound();
-          }
+          await hospital.deleteDeparment(id);
         } else if (option == 5) {
           break;
         } else {
-          TerminalHelper.invalidOption();
+          stdout.writeln('Invalid option, Please try agian');
         }
       }
       //****************************************************************/
@@ -217,7 +291,8 @@ void main(List<String> args) async {
     } else if (option == 3) {
       break;
     } else {
-      TerminalHelper.invalidOption();
+      stdout.writeln('Invalid option, Please try agian');
+      stdout.writeln('-' * 20);
     }
   }
 }
